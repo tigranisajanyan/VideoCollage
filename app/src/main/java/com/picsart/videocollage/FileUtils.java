@@ -9,6 +9,8 @@ import java.io.File;
  */
 public class FileUtils {
 
+    public static String FILE_PREFIX = "file://";
+
     public static void clearDir(File dir) {
         try {
             File[] files = dir.listFiles();

@@ -27,4 +27,5 @@ dependencies {
     compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.3.0'
     compile 'com.android.support:recyclerview-v7:23.1.1'
     compile project(':picsart_video_encoder')
+    compile files('libs/universal-image-loader-1.9.5.jar')
 }

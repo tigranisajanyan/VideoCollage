@@ -1,20 +1,32 @@
 package com.picsart.videocollage;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
+import com.nostra13.universalimageloader.cache.memory.impl.UsingFreqLimitedMemoryCache;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
+import com.nostra13.universalimageloader.utils.StorageUtils;
 
 import java.io.File;
 
@@ -23,20 +35,15 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
 
     private FrameLayout firstWindow;
-    private FrameLayout secondWindow;
 
     private FrameLayout firstCameraPreviewContainer;
-    private FrameLayout secondCameraPreviewContainer;
 
     private RelativeLayout firstCameraPreview;
-    private RelativeLayout secondCameraPreview;
 
     private ImageView imageView1;
-    private ImageView imageView2;
 
 
-    private ImageButton switchCameraPreviewButton, switchFirstCameraButton, switchSecondCameraButton, recordFirstCameraButton, recordSecondCameraButton;
-
+    private ImageButton switchCameraPreviewButton, switchFirstCameraButton, recordFirstCameraButton;
 
     private CameraPreview cameraPreview;
     private Camera camera;
@@ -56,9 +63,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initImageLoader(MainActivity.this);
+        ImageLoader.getInstance().clearMemoryCache();
+        ImageLoader.getInstance().clearDiskCache();
+
         FileUtils.createDir(Constants.MY_DIR);
         FileUtils.createDir(Constants.FIRST_VIDEO);
         FileUtils.createDir(Constants.SECOND_VIDEO);
+        FileUtils.createDir("VideoCollage/output");
 
         init();
 
@@ -68,29 +80,16 @@ public class MainActivity extends AppCompatActivity {
         context = this;
 
         firstWindow = (FrameLayout) findViewById(R.id.first_window);
-        secondWindow = (FrameLayout) findViewById(R.id.second_window);
 
         firstCameraPreview = (RelativeLayout) findViewById(R.id.camera_preview_first);
-        secondCameraPreview = (RelativeLayout) findViewById(R.id.camera_preview_second);
 
         firstCameraPreviewContainer = (FrameLayout) findViewById(R.id.camera_preview_first_container);
-        secondCameraPreviewContainer = (FrameLayout) findViewById(R.id.camera_preview_second_container);
 
         imageView1 = (ImageView) findViewById(R.id.image1);
-        imageView2 = (ImageView) findViewById(R.id.image2);
-
-        ViewGroup.LayoutParams layoutParams = firstWindow.getLayoutParams();
-        layoutParams.width = getResources().getDisplayMetrics().widthPixels / 2;
-        layoutParams.height = layoutParams.width * 4 / 3;
-        firstWindow.setLayoutParams(layoutParams);
-        secondWindow.setLayoutParams(layoutParams);
 
         switchFirstCameraButton = (ImageButton) findViewById(R.id.camera_preview_first_switch_button);
-        switchSecondCameraButton = (ImageButton) findViewById(R.id.camera_preview_second_switch_button);
-        switchCameraPreviewButton = (ImageButton) findViewById(R.id.switch_camera_preview);
 
         recordFirstCameraButton = (ImageButton) findViewById(R.id.first_camera_capture_button);
-        recordSecondCameraButton = (ImageButton) findViewById(R.id.second_camera_capture_button);
 
         cameraPreview = new CameraPreview(this, camera);
 
@@ -100,26 +99,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         switchFirstCameraButton.setOnClickListener(switchCameraListener);
-        switchSecondCameraButton.setOnClickListener(switchCameraListener);
-        switchCameraPreviewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (firstCameraPreview.getChildCount() == 0) {
-                    cameraFirst = true;
-                    secondCameraPreview.removeAllViews();
-                    firstCameraPreview.addView(cameraPreview);
-                } else {
-                    cameraFirst = false;
-                    firstCameraPreview.removeAllViews();
-                    secondCameraPreview.addView(cameraPreview);
-                }
-                visibilitySwitcher(cameraFirst);
-                openBackCamera();
-            }
-        });
 
         recordFirstCameraButton.setOnTouchListener(captrureListener);
-        recordSecondCameraButton.setOnTouchListener(captrureListener);
+
     }
 
     @Override
@@ -151,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
         // stop and release camera
         try {
             if (camera != null) {
+                Log.d("gaga", "try");
                 cameraPreview.stop();
                 camera.stopPreview();
                 camera.setPreviewCallback(null);
@@ -159,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 camera = null;
             }
         } catch (Exception e) {
+            Log.d("gaga", "catch");
             e.printStackTrace();
         }
     }
@@ -232,21 +216,31 @@ public class MainActivity extends AppCompatActivity {
                         recording = false;
                         captureVideoCount += 1;
                         if (captureVideoCount > 1) {
-                            Intent intent = new Intent(MainActivity.this, CollageMakerActivity.class);
-                            startActivity(intent);
+
+                            final ProgressDialog progressDialog = new ProgressDialog(context);
+                            progressDialog.setCancelable(false);
+                            progressDialog.show();
+                            Render render = new Render(context);
+                            render.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            render.setOnRenderFinishedListener(new Render.OnRenderFinishedListener() {
+                                @Override
+                                public void onFinish(boolean finished) {
+                                    Intent intent = new Intent(MainActivity.this, CollageMakerActivity.class);
+                                    startActivity(intent);
+                                    progressDialog.dismiss();
+                                }
+                            });
                         } else {
                             if (firstCameraPreview.getChildCount() == 0) {
-                                gifImitation = new GifImitation(MainActivity.this, imageView2, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/second_video"));
-                                gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                //gifImitation = new GifImitation(MainActivity.this, imageView2, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/second_video"));
+                                //gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 cameraFirst = true;
-                                secondCameraPreview.removeAllViews();
                                 firstCameraPreview.addView(cameraPreview);
                             } else {
-                                gifImitation = new GifImitation(MainActivity.this, imageView1, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/first_video"));
-                                gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                //gifImitation = new GifImitation(MainActivity.this, imageView1, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/first_video"));
+                                //gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 cameraFirst = false;
                                 firstCameraPreview.removeAllViews();
-                                secondCameraPreview.addView(cameraPreview);
                             }
                             visibilitySwitcher(cameraFirst);
                             openBackCamera();
@@ -262,10 +256,7 @@ public class MainActivity extends AppCompatActivity {
     private void visibilitySwitcher(boolean cameraFirst) {
         if (cameraFirst) {
             firstCameraPreviewContainer.setVisibility(View.VISIBLE);
-            secondCameraPreviewContainer.setVisibility(View.INVISIBLE);
-            imageView2.setVisibility(View.VISIBLE);
         } else {
-            secondCameraPreviewContainer.setVisibility(View.VISIBLE);
             firstCameraPreviewContainer.setVisibility(View.INVISIBLE);
             imageView1.setVisibility(View.VISIBLE);
         }
@@ -282,6 +273,47 @@ public class MainActivity extends AppCompatActivity {
             camera = Camera.open(cameraId);
             // mPicture = getPictureCallback();
             cameraPreview.refreshCamera(camera);
+        }
+    }
+
+    public static void initImageLoader(Context context) {
+        try {
+            String CACHE_DIR = Environment.getExternalStorageDirectory()
+                    .getAbsolutePath() + "/.temp_tmp";
+            new File(CACHE_DIR).mkdirs();
+
+            File cacheDir = StorageUtils.getOwnCacheDirectory(context,
+                    CACHE_DIR);
+
+            DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
+                    .cacheOnDisc(true)
+                    .imageScaleType(ImageScaleType.IN_SAMPLE_POWER_OF_2)
+                    .considerExifParams(true)
+                    .cacheOnDisk(true)
+                    .cacheInMemory(true)
+                    .decodingOptions(new BitmapFactory.Options())
+                    .bitmapConfig(Bitmap.Config.RGB_565).build();
+
+            ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
+                    /*.memoryCacheExtraOptions(1000, 1000) // width, height
+                    .discCacheExtraOptions(1000, 1000, new BitmapProcessor() {
+                        @Override
+                        public Bitmap process(Bitmap bitmap) {
+                            return null;
+                        }
+                    })*/
+                    //.threadPoolSize(3)
+                    //.threadPriority(Thread.MIN_PRIORITY + 2)
+                    .denyCacheImageMultipleSizesInMemory()
+                    .memoryCache(new UsingFreqLimitedMemoryCache(3 * 1024 * 1024)) // 3 Mb
+                    .discCacheFileNameGenerator(new HashCodeFileNameGenerator())
+                    .imageDownloader(new BaseImageDownloader(context)) // connectTimeout (5 s), readTimeout (30 s)
+                    .defaultDisplayImageOptions(defaultOptions)
+                    .build();
+
+            ImageLoader.getInstance().init(config);
+
+        } catch (Exception e) {
         }
     }
 

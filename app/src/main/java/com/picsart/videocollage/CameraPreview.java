@@ -71,19 +71,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (IOException e) {
             Log.d(VIEW_LOG_TAG, "Error setting camera preview: " + e.getMessage());
         }
+        refreshCamera(mCamera);
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
         Log.d(TAG, "surface_changed: " + w + "   /  " + h);
-        refreshCamera(mCamera);
+
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surace_destroyed");
-        stopPreviewAndFreeCamera();
+        //stopPreviewAndFreeCamera();
     }
 
     @Override
@@ -150,18 +151,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
             parameters.setPictureSize(pictureFixedWidth, pictureFixedHeight);
 
-            int w = parameters.getPreviewSize().width / 2;
-            int h = parameters.getPreviewSize().height / 2;
+            int w = parameters.getPreviewSize().width ;
+            int h = parameters.getPreviewSize().height ;
             setupLayout(w, h);
 
             /*if (parameters.getFlashMode().contains(Camera.Parameters.FLASH_MODE_OFF)) {
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
             }*/
 
-            /*if (parameters.getSupportedFocusModes().contains(
+            if (parameters.getSupportedFocusModes().contains(
                     Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
                 parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-            }*/
+            }
 
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setDisplayOrientation(orientation);
@@ -295,8 +296,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private void setupLayout(int w, int h) {
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) this.getLayoutParams();
-        layoutParams.height = getResources().getDisplayMetrics().widthPixels / 2 * w / h;
-        layoutParams.width = getResources().getDisplayMetrics().widthPixels / 2;
+        layoutParams.height = getResources().getDisplayMetrics().widthPixels  * w / h;
+        layoutParams.width = getResources().getDisplayMetrics().widthPixels ;
         this.setLayoutParams(layoutParams);
     }
 

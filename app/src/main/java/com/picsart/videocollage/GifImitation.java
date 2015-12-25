@@ -6,9 +6,9 @@ import android.os.AsyncTask;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.io.File;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,13 +49,13 @@ public class GifImitation extends AsyncTask<Void, Bitmap, Void> {
             index = k % files.length;
 
             Bitmap bitmap = null;
-            try {
-                bitmap = Glide.with(context).load(files[index].getAbsolutePath()).asBitmap().into(500, 500).get();
-            } catch (InterruptedException e) {
+            //try {
+                //Glide.with(context).load(files[index].getAbsolutePath()).asBitmap().into(imageView);
+            /*} catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
                 e.printStackTrace();
-            }
+            }*/
             publishProgress(bitmap);
 
             try {
@@ -71,8 +71,10 @@ public class GifImitation extends AsyncTask<Void, Bitmap, Void> {
     @Override
     protected void onProgressUpdate(Bitmap... values) {
         super.onProgressUpdate(values);
-        Bitmap bitmap = values[0];
-        imageView.setImageBitmap(bitmap);
+        ImageLoader.getInstance().displayImage(FileUtils.FILE_PREFIX+files[index].getAbsolutePath(),imageView);
+        //Glide.with(context).load(files[index].getAbsolutePath()).asBitmap().into(imageView);
+        //Bitmap bitmap = values[0];
+        //imageView.setImageBitmap(bitmap);
     }
 
     @Override

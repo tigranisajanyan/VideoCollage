@@ -30,6 +30,8 @@
         </activity>
         <activity android:name=".CollageMakerActivity" >
         </activity>
+        <activity android:name=".ActivityCamera" >
+        </activity>
     </application>
 
 </manifest>

@@ -5,148 +5,49 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <RelativeLayout
-        android:id="@+id/capture_timer_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="5dp">
-
-        <TextView
-            android:id="@+id/first_capture_time_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:layout_toLeftOf="@+id/slash"
-            android:text="00" />
-
-        <TextView
-            android:id="@+id/slash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:text="/" />
-
-        <TextView
-            android:id="@+id/capture_time_second_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/slash"
-            android:text="00" />
-    </RelativeLayout>
-
-
-    <LinearLayout
-        android:id="@+id/camera_preview_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/capture_timer_container"
-        android:layout_marginLeft="1dp"
-        android:layout_marginRight="1dp"
-        android:layout_marginTop="5dp"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:id="@+id/first_window"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-
-            <ImageView
-                android:id="@+id/image1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/black" />
-
-            <FrameLayout
-                android:id="@+id/camera_preview_first_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <RelativeLayout
-                    android:id="@+id/camera_preview_first"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/colorPrimary" />
-
-                <ImageButton
-                    android:id="@+id/first_camera_capture_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|right"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/button_circle_background"
-                    android:padding="2dp"
-                    android:src="@drawable/ic_action_video" />
-
-                <ImageButton
-                    android:id="@+id/camera_preview_first_switch_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|left"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/button_circle_background"
-                    android:padding="2dp"
-                    android:src="@drawable/ic_action_switch_video" />
-            </FrameLayout>
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/second_window"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <ImageView
-                android:id="@+id/image2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/darker_gray" />
-
-            <FrameLayout
-                android:id="@+id/camera_preview_second_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <RelativeLayout
-                    android:id="@+id/camera_preview_second"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/background_light" />
-
-                <ImageButton
-                    android:id="@+id/second_camera_capture_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|right"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/button_circle_background"
-                    android:padding="2dp"
-                    android:src="@drawable/ic_action_video" />
-
-                <ImageButton
-                    android:id="@+id/camera_preview_second_switch_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|left"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/button_circle_background"
-                    android:padding="2dp"
-                    android:src="@drawable/ic_action_switch_video" />
-            </FrameLayout>
-        </FrameLayout>
-
-    </LinearLayout>
-
-    <ImageButton
-        android:id="@+id/switch_camera_preview"
+    <FrameLayout
+        android:id="@+id/first_window"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/camera_preview_container"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:src="@drawable/camera_rotate" />
+        android:layout_height="wrap_content">
+
+
+        <ImageView
+            android:id="@+id/image1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/black" />
+
+        <FrameLayout
+            android:id="@+id/camera_preview_first_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/camera_preview_first"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimary" />
+
+            <ImageButton
+                android:id="@+id/first_camera_capture_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_margin="30dp"
+                android:background="@drawable/button_circle_background"
+                android:padding="2dp"
+                android:src="@drawable/ic_action_video" />
+
+            <ImageButton
+                android:id="@+id/camera_preview_first_switch_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|left"
+                android:layout_margin="30dp"
+                android:background="@drawable/button_circle_background"
+                android:padding="2dp"
+                android:src="@drawable/ic_action_switch_video" />
+        </FrameLayout>
+    </FrameLayout>
 
 </RelativeLayout>

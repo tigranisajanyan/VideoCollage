@@ -1,17 +1,19 @@
 package com.picsart.videocollage;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
-import android.os.AsyncTask;
+import android.media.MediaCodec;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -29,6 +31,8 @@ import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 import com.nostra13.universalimageloader.utils.StorageUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
         FileUtils.createDir(Constants.MY_DIR);
         FileUtils.createDir(Constants.FIRST_VIDEO);
-        FileUtils.createDir(Constants.SECOND_VIDEO);
         FileUtils.createDir("VideoCollage/output");
 
         init();
@@ -180,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             // get the number of cameras
-            if (!recording) {
+            /*if (!recording) {
                 int camerasNumber = Camera.getNumberOfCameras();
                 if (camerasNumber > 1) {
                     // release the old camera instance
@@ -191,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
                     Toast toast = Toast.makeText(context, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG);
                     toast.show();
                 }
-            }
+            }*/
+            decode();
         }
     };
 
@@ -200,51 +204,29 @@ public class MainActivity extends AppCompatActivity {
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    if (cameraFirst) {
-                        FileUtils.clearDir(new File(Environment.getExternalStorageDirectory() + "/VideoCollage/first_video"));
-                        cameraPreview.start("/VideoCollage/first_video");
-                        recording = true;
-                    } else {
-                        FileUtils.clearDir(new File(Environment.getExternalStorageDirectory() + "/VideoCollage/second_video"));
-                        cameraPreview.start("/VideoCollage/second_video");
-                        recording = true;
-                    }
+                    FileUtils.clearDir(new File(Environment.getExternalStorageDirectory() + "/VideoCollage/first_video"));
+                    cameraPreview.start("/VideoCollage/first_video");
+                    recording = true;
                     break;
                 case MotionEvent.ACTION_UP:
                     if (recording) {
                         cameraPreview.stop();
                         recording = false;
-                        captureVideoCount += 1;
-                        if (captureVideoCount > 1) {
-
-                            final ProgressDialog progressDialog = new ProgressDialog(context);
-                            progressDialog.setCancelable(false);
-                            progressDialog.show();
-                            Render render = new Render(context);
-                            render.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                            render.setOnRenderFinishedListener(new Render.OnRenderFinishedListener() {
-                                @Override
-                                public void onFinish(boolean finished) {
-                                    Intent intent = new Intent(MainActivity.this, CollageMakerActivity.class);
-                                    startActivity(intent);
-                                    progressDialog.dismiss();
-                                }
-                            });
-                        } else {
-                            if (firstCameraPreview.getChildCount() == 0) {
-                                //gifImitation = new GifImitation(MainActivity.this, imageView2, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/second_video"));
-                                //gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                cameraFirst = true;
-                                firstCameraPreview.addView(cameraPreview);
-                            } else {
-                                //gifImitation = new GifImitation(MainActivity.this, imageView1, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/first_video"));
-                                //gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                cameraFirst = false;
-                                firstCameraPreview.removeAllViews();
+                        Intent intent = new Intent(MainActivity.this, CollageMakerActivity.class);
+                        startActivity(intent);
+                        /*final ProgressDialog progressDialog = new ProgressDialog(context);
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+                        Render render = new Render(context);
+                        render.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        render.setOnRenderFinishedListener(new Render.OnRenderFinishedListener() {
+                            @Override
+                            public void onFinish(boolean finished) {
+                                Intent intent = new Intent(MainActivity.this, CollageMakerActivity.class);
+                                startActivity(intent);
+                                progressDialog.dismiss();
                             }
-                            visibilitySwitcher(cameraFirst);
-                            openBackCamera();
-                        }
+                        });*/
                     }
                 default:
                     return false;
@@ -315,6 +297,104 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
         }
+    }
+
+    public void decode() {
+        MediaCodec decoder = null;
+        Surface surface = null;
+
+
+        MediaExtractor extractor = new MediaExtractor();
+        try {
+            extractor.setDataSource(Environment.getExternalStorageDirectory() + "/VID_20151210_152901.mp4");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for (int i = 0; i < extractor.getTrackCount(); i++) {
+            MediaFormat format = extractor.getTrackFormat(i);
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            if (mime.startsWith("video/")) {
+                extractor.selectTrack(i);
+                try {
+                    decoder = MediaCodec.createDecoderByType(mime);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                decoder.configure(format, surface, null, 0);
+                break;
+            }
+        }
+
+        if (decoder == null) {
+            Log.e("DecodeActivity", "Can't find video info!");
+            return;
+        }
+
+        decoder.start();
+
+        ByteBuffer[] inputBuffers = decoder.getInputBuffers();
+        ByteBuffer[] outputBuffers = decoder.getOutputBuffers();
+        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+        boolean isEOS = false;
+        long startMs = System.currentTimeMillis();
+
+        while (!Thread.interrupted()) {
+            if (!isEOS) {
+                int inIndex = decoder.dequeueInputBuffer(10000);
+                if (inIndex >= 0) {
+                    ByteBuffer buffer = inputBuffers[inIndex];
+                    int sampleSize = extractor.readSampleData(buffer, 0);
+                    if (sampleSize < 0) {
+                        Log.d("DecodeActivity", "InputBuffer BUFFER_FLAG_END_OF_STREAM");
+                        decoder.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                        isEOS = true;
+                    } else {
+                        decoder.queueInputBuffer(inIndex, 0, sampleSize, extractor.getSampleTime(), 0);
+                        extractor.advance();
+                    }
+                }
+            }
+
+            int outIndex = decoder.dequeueOutputBuffer(info, 10000);
+            switch (outIndex) {
+                case MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED:
+                    Log.d("DecodeActivity", "INFO_OUTPUT_BUFFERS_CHANGED");
+                    outputBuffers = decoder.getOutputBuffers();
+                    break;
+                case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
+                    Log.d("DecodeActivity", "New format " + decoder.getOutputFormat());
+                    break;
+                case MediaCodec.INFO_TRY_AGAIN_LATER:
+                    Log.d("DecodeActivity", "dequeueOutputBuffer timed out!");
+                    break;
+                default:
+                    ByteBuffer buffer = outputBuffers[outIndex];
+                    Log.v("DecodeActivity", "We can't use this buffer but render it due to the API limit, " + buffer);
+
+                    // We use a very simple clock to keep the video FPS, or the video
+                    // playback will be too fast
+                    while (info.presentationTimeUs / 1000 > System.currentTimeMillis() - startMs) {
+                        /*try {
+                            //sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }*/
+                    }
+                    decoder.releaseOutputBuffer(outIndex, true);
+                    break;
+            }
+
+            if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                Log.d("DecodeActivity", "OutputBuffer BUFFER_FLAG_END_OF_STREAM");
+                break;
+            }
+        }
+
+        decoder.stop();
+        decoder.release();
+        extractor.release();
     }
 
 }

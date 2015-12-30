@@ -10,7 +10,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.socialin.android.encoder.Encoder;
 
@@ -18,11 +17,12 @@ import java.io.File;
 import java.util.ArrayList;
 
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageView;
 
 public class CollageMakerActivity extends AppCompatActivity {
 
 
-    private ImageView gpuImageView;
+    private GPUImageView gpuImageView;
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
 
@@ -58,7 +58,7 @@ public class CollageMakerActivity extends AppCompatActivity {
         filters.addFilter("Posterize", GPUEffects.FilterType.POSTERIZE);
 
 
-        gpuImageView = (ImageView) findViewById(R.id.gpu_image_view);
+        gpuImageView = (GPUImageView) findViewById(R.id.gpu_image_view);
         recyclerView = (RecyclerView) findViewById(R.id.effects_rec_view);
         linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
 
@@ -78,11 +78,11 @@ public class CollageMakerActivity extends AppCompatActivity {
             @Override
             public void onItemClick(View view, int position) {
                 //((SeekBar) container.findViewById(R.id.opacity_seek_bar)).setProgress(100);
-                //switchFilterTo(GPUEffects.createFilterForType(filters.filters.get(position)));
+                switchFilterTo(GPUEffects.createFilterForType(filters.filters.get(position)));
             }
         }));
 
-        gifImitation = new GifImitation(this, gpuImageView, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/output"));
+        gifImitation = new GifImitation(this, gpuImageView, new File(Environment.getExternalStorageDirectory() + "/VideoCollage/first_video"));
         gifImitation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         /*container.findViewById(R.id.opacity_seek_bar).setVisibility(
@@ -109,14 +109,14 @@ public class CollageMakerActivity extends AppCompatActivity {
         });*/
     }
 
-    /*private void switchFilterTo(final GPUImageFilter filter) {
+    private void switchFilterTo(final GPUImageFilter filter) {
         if (gpuImageFilter == null
                 || (filter != null && !gpuImageFilter.getClass().equals(filter.getClass()))) {
             gpuImageFilter = filter;
             gpuImageView.setFilter(gpuImageFilter);
             mFilterAdjuster = new GPUImageFilterTools.FilterAdjuster(gpuImageFilter);
         }
-    }*/
+    }
 
     private class EncodeFrames extends AsyncTask<ArrayList<Bitmap>, Integer, Void> {
 

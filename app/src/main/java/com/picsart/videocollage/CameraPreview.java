@@ -14,11 +14,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.RelativeLayout;
 
+import com.decoder.PhotoUtils;
+
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
@@ -151,8 +150,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
             parameters.setPictureSize(pictureFixedWidth, pictureFixedHeight);
 
-            int w = parameters.getPreviewSize().width ;
-            int h = parameters.getPreviewSize().height ;
+            int w = parameters.getPreviewSize().width;
+            int h = parameters.getPreviewSize().height;
             setupLayout(w, h);
 
             /*if (parameters.getFlashMode().contains(Camera.Parameters.FLASH_MODE_OFF)) {
@@ -168,6 +167,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setDisplayOrientation(orientation);
             mCamera.setParameters(parameters);
             mCamera.setPreviewCallback(this);
+
             mCamera.startPreview();
 
             Log.d(TAG, "camera_preview_size :   " + parameters.getPreviewSize().width + "  /  " + parameters.getPreviewSize().height);
@@ -269,13 +269,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, width / 2, height / 2, true);
         Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
 
-        OutputStream imagefile = null;
+
+        PhotoUtils.saveRawBitmap(rotatedBitmap, filePath);
+        /*OutputStream imagefile = null;
         try {
             imagefile = new FileOutputStream(filePath);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, imagefile);
+        rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, imagefile);*/
     }
 
     /**
@@ -296,8 +298,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private void setupLayout(int w, int h) {
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) this.getLayoutParams();
-        layoutParams.height = getResources().getDisplayMetrics().widthPixels  * w / h;
-        layoutParams.width = getResources().getDisplayMetrics().widthPixels ;
+        layoutParams.height = getResources().getDisplayMetrics().widthPixels * w / h;
+        layoutParams.width = getResources().getDisplayMetrics().widthPixels;
         this.setLayoutParams(layoutParams);
     }
 

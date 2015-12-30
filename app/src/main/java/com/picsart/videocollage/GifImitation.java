@@ -3,13 +3,13 @@ package com.picsart.videocollage;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.nostra13.universalimageloader.core.ImageLoader;
+import com.decoder.PhotoUtils;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+
+import jp.co.cyberagent.android.gpuimage.GPUImageView;
 
 /**
  * Created by Tigran on 8/6/15.
@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class GifImitation extends AsyncTask<Void, Bitmap, Void> {
 
     private Context context;
-    private ImageView imageView;
+    private GPUImageView imageView;
     private File file;
-    private int duration = 53;
+    private int duration = 90;
     private boolean play = false;
     private int k = 0;
     int index;
@@ -28,7 +28,7 @@ public class GifImitation extends AsyncTask<Void, Bitmap, Void> {
 
     File[] files;
 
-    public GifImitation(Context context, ImageView imageView, File file) {
+    public GifImitation(Context context, GPUImageView imageView, File file) {
 
         this.imageView = imageView;
         this.file = file;
@@ -45,17 +45,12 @@ public class GifImitation extends AsyncTask<Void, Bitmap, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         while (play) {
-            Glide.get(context).clearDiskCache();
+            //Glide.get(context).clearDiskCache();
             index = k % files.length;
 
             Bitmap bitmap = null;
-            //try {
-                //Glide.with(context).load(files[index].getAbsolutePath()).asBitmap().into(imageView);
-            /*} catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }*/
+            //Glide.with(context).load(files[index].getAbsolutePath()).asBitmap().into(imageView);
+
             publishProgress(bitmap);
 
             try {
@@ -71,8 +66,11 @@ public class GifImitation extends AsyncTask<Void, Bitmap, Void> {
     @Override
     protected void onProgressUpdate(Bitmap... values) {
         super.onProgressUpdate(values);
-        ImageLoader.getInstance().displayImage(FileUtils.FILE_PREFIX+files[index].getAbsolutePath(),imageView);
-        //Glide.with(context).load(files[index].getAbsolutePath()).asBitmap().into(imageView);
+        //Bitmap bitmap = ImageLoader.getInstance().loadImageSync(FileUtils.FILE_PREFIX + files[index].getAbsolutePath());
+        Bitmap bitmap = PhotoUtils.loadRawBitmap(files[index].getAbsolutePath());
+        //imageView.getGPUImage().deleteImage();
+        imageView.getGPUImage().setImage(bitmap);
+        //Glide.with(context).load(files[index].getAbsolutePath()).into(imageView);
         //Bitmap bitmap = values[0];
         //imageView.setImageBitmap(bitmap);
     }

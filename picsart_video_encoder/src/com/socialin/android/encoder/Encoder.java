@@ -1,11 +1,6 @@
 package com.socialin.android.encoder;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 
@@ -23,6 +18,10 @@ import com.google.libwebm.mkvmuxer.Segment;
 import com.google.libwebm.mkvmuxer.SegmentInfo;
 import com.google.utils.WavReader;
 import com.socialin.android.encoder.factory.VideoEncoderFactory;
+
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 public class Encoder implements VideoEncoderFactory {
 

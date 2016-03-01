@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">Video Collage</string>
+    <string name="app_name">Vid2GIF</string>
+
+    <string name="share_facebook_string">Facebook</string>
+    <string name="share_instagram_string">Instagram</string>
+    <string name="share_messenger_string">Messenger</string>
+    <string name="share_whatsapp_string">Whatsapp</string>
+    <string name="share_more_string">More</string>
+    <string name="please_wait">Please Wait</string>
+    <string name="no_camera">Sorry, your phone does not have a camera!</string>
+    <string name="no_front_camera">No front facing camera found.</string>
+    <string name="only_one_camera">Sorry, your phone has only one camera!</string>
+    <string name="share_file">Share File!</string>
+    <string name="saving_error">Error while SaveToMemory</string>
+
 </resources>

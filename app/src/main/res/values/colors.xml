@@ -2,6 +2,39 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#E1B82E</color>
     <color name="colorGrayTransparent">#40000000</color>
+
+    <color name="colorTabber">#202020</color>
+
+    <color name="colorBackgroud">#313131</color>
+    <color name="colorTextTitle">#FFFFFF</color>
+    <color name="colorText">#BABABA</color>
+    <color name="colorSeecBarEmpty">#A3A3A3</color>
+    <color name="colorSeecBarFill">#FFEF6C00</color>
+
+    <color name="thumb_color">#e39c26</color>
+    <color name="thumb_color_transparent">#88e39c26</color>
+    <color name="thumb_color_pressed">#DDe39c26</color>
+    <color name="gray_25">#252525</color>
+d
+    <color name="color_transparent">#00000000</color>
+    <color name="white_transparent_E6">#E6FFFFFF</color>
+    <color name="white_transparent_DC">#DCFFFFFF</color>
+    <color name="white_transparent_80">#80ffffff</color>
+    <color name="white_transparent_66">#66FFFFFF</color>
+    <color name="white_transparent_40">#40ffffff</color>
+    <color name="white_transparent_33">#33FFFFFF</color>
+    <color name="white_transparent_30">#30FFFFFF</color>
+    <color name="white_transparent_26">#26ffffff</color>
+    <color name="white_transparent_1A">#1AFFFFFF</color>
+
+    <color name="black_transparent_DD">#DD000000</color>
+    <color name="black_transparent_CC">#CC000000</color>
+    <color name="black_transparent_B3">#B3000000</color>
+    <color name="black_transparent_80">#80000000</color>
+    <color name="black_transparent_77">#77000000</color>
+    <color name="black_transparent_60">#60000000</color>
+    <color name="black_transparent_20">#20000000</color>
+
 </resources>

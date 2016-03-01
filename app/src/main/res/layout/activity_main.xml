@@ -3,51 +3,69 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@color/colorBackgroud"
+    tools:context=".activity.MainActivity">
 
     <FrameLayout
-        android:id="@+id/first_window"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:id="@+id/camera_preview_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorBackgroud">
 
-
-        <ImageView
-            android:id="@+id/image1"
+        <RelativeLayout
+            android:id="@+id/camera_preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/black" />
+            android:background="@color/colorBackgroud" />
 
-        <FrameLayout
-            android:id="@+id/camera_preview_first_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <RelativeLayout
-                android:id="@+id/camera_preview_first"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/colorPrimary" />
-
-            <ImageButton
-                android:id="@+id/first_camera_capture_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|right"
-                android:layout_margin="30dp"
-                android:background="@drawable/button_circle_background"
-                android:padding="2dp"
-                android:src="@drawable/ic_action_video" />
-
-            <ImageButton
-                android:id="@+id/camera_preview_first_switch_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|left"
-                android:layout_margin="30dp"
-                android:background="@drawable/button_circle_background"
-                android:padding="2dp"
-                android:src="@drawable/ic_action_switch_video" />
-        </FrameLayout>
+        <TextView
+            android:id="@+id/recording_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/ratio_button"
+            android:gravity="center"
+            android:text="00:06"
+            android:textColor="@color/colorText"
+            android:textSize="18sp" />
     </FrameLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <ImageButton
+            android:id="@+id/camera_preview_flash_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="30dp"
+            android:background="@drawable/button_circle_background"
+            android:padding="3dp"
+            android:src="@drawable/ic_action_flash_off" />
+
+        <ImageButton
+            android:id="@+id/camera_capture_button"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_centerInParent="true"
+            android:background="@color/colorBackgroud"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/capture" />
+
+        <ImageButton
+            android:id="@+id/camera_preview_switch_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_margin="30dp"
+            android:background="@drawable/button_circle_background"
+            android:padding="3dp"
+            android:src="@drawable/ic_action_switch_video" />
+    </RelativeLayout>
 
 </RelativeLayout>

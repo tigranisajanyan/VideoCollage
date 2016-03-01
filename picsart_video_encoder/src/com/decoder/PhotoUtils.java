@@ -1,9 +1,13 @@
 package com.decoder;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+
+import com.socialin.android.photo.imgop.ImageOp;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,6 +24,13 @@ import java.nio.channels.FileChannel;
  */
 public class PhotoUtils {
 
+    /**
+     * Saving byte buffer to sd card
+     *
+     * @param filePath
+     * @param buffer
+     * @throws UnsatisfiedLinkError
+     */
     public static void saveBufferToSDCard(String filePath, ByteBuffer buffer) throws UnsatisfiedLinkError {
 
         try {
@@ -29,14 +40,21 @@ public class PhotoUtils {
         }
     }
 
+    /**
+     * Reading byte buffer from given path
+     *
+     * @param bufferPath
+     * @param bufferSize
+     * @return
+     */
     public static ByteBuffer readBufferFromFile(String bufferPath, int bufferSize) {
         FileInputStream inputStream = null;
         FileChannel channel = null;
         try {
             inputStream = new FileInputStream(bufferPath);
 
-            ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-//            ByteBuffer buffer = ImageOp.allocNativeBuffer(bufferSize);
+            //ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+            ByteBuffer buffer = ImageOp.allocNativeBuffer(bufferSize);
 
             channel = inputStream.getChannel();
             channel.read(buffer);
@@ -86,55 +104,71 @@ public class PhotoUtils {
         return result;
     }
 
-    //gago xi ches push linum
     public static Bitmap fromBufferToBitmap(int w, int h, ByteBuffer buffer) {
-
         Bitmap result = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         buffer.rewind();
         result.copyPixelsFromBuffer(buffer);
 
-        return result;
+        Matrix m = new Matrix();
+        //m.preScale(-1, 1);
+        Bitmap dst = Bitmap.createBitmap(result, 0, 0, result.getWidth(), result.getHeight(), m, false);
+        dst.setDensity(DisplayMetrics.DENSITY_DEFAULT);
+
+        return dst;
     }
 
-    public static int checkBufferSize(String videoPath, VideoDecoder.FrameSize frameSize) {
-
+    public static int checkBufferSize(String videoPath, int frameSize) {
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         metaRetriever.setDataSource(videoPath);
         int height = Integer.parseInt(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
         int width = Integer.parseInt(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
-        int newHeight = height / (frameSize.ordinal() + 1);
-        int newWidth = width / (frameSize.ordinal() + 1);
+        int newHeight = height / frameSize;
+        int newWidth = width / frameSize;
         return (newHeight * newWidth * 4);
     }
 
-    public static int checkFrameWidth(String videoPath, VideoDecoder.FrameSize frameSize) {
+    public static int checkFrameWidth(String videoPath, int frameSize) {
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         metaRetriever.setDataSource(videoPath);
         int height = Integer.parseInt(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
         int width = Integer.parseInt(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
         int orientation = checkFrameOrientation(videoPath);
+
         int x;
+        int SDK_INT = android.os.Build.VERSION.SDK_INT;
+        //if (SDK_INT >= 21) {
+
         if (orientation == 90 || orientation == 270) {
             x = height < width ? height : width;
         } else {
-            x = height > width ? height : width;
+            x = width;
         }
-        return x / (frameSize.ordinal() + 1);
+        //} else {
+        // x = width;
+        //}
+        return x / frameSize;
     }
 
-    public static int checkFrameHeight(String videoPath, VideoDecoder.FrameSize frameSize) {
+    public static int checkFrameHeight(String videoPath, int frameSize) {
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         metaRetriever.setDataSource(videoPath);
         int height = Integer.parseInt(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
         int width = Integer.parseInt(metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
         int orientation = checkFrameOrientation(videoPath);
+
         int x;
+        int SDK_INT = android.os.Build.VERSION.SDK_INT;
+        //if (SDK_INT >= 21) {
+
         if (orientation == 90 || orientation == 270) {
             x = height > width ? height : width;
         } else {
-            x = height < width ? height : width;
+            x = height;
         }
-        return x / (frameSize.ordinal() + 1);
+        //} else {
+        //  x = height;
+        //}
+        return x / frameSize;
     }
 
     public static int checkFrameOrientation(String videoPath) {
@@ -142,7 +176,6 @@ public class PhotoUtils {
         metaRetriever.setDataSource(videoPath);
         String orientation = metaRetriever.extractMetadata(
                 MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
-
         return Integer.parseInt(orientation);
     }
 
@@ -185,7 +218,6 @@ public class PhotoUtils {
         try {
             DataInputStream stream = new DataInputStream(new FileInputStream(filePath));
             if (stream.readInt() == 0x2E_52_41_57) { // .RAW
-
                 int width = stream.readInt();
                 int height = stream.readInt();
                 Bitmap.Config config = Bitmap.Config.values()[stream.readInt()];
@@ -204,6 +236,30 @@ public class PhotoUtils {
         }
 
         return result;
+    }
+
+    public static void saveByteBufferToRawBitmap(ByteBuffer byteBuffer, int width, int height, Bitmap.Config config, String filePath) {
+        try {
+            File file = new File(filePath);
+            // make sure containing dir exists
+            if (!file.exists() && file.getParent() != null) {
+                File parentFile = file.getParentFile();
+                if (!parentFile.exists()) {
+                    parentFile.mkdirs();
+                }
+            }
+            DataOutputStream stream = new DataOutputStream(new FileOutputStream(file));
+            stream.writeInt(0x2E_52_41_57); // .RAW
+            stream.writeInt(width);
+            stream.writeInt(height);
+            stream.writeInt(config.ordinal());
+
+            byte[] rawData = byteBuffer.array();
+            stream.write(rawData);
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

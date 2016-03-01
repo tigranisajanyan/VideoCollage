@@ -2,107 +2,228 @@ package com.picsart.videocollage.camera;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.view.Surface;
+import android.widget.ImageButton;
+
+import com.picsart.videocollage.R;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Created by Tigran on 12/25/15.
+ * Created by Tigran on 12/10/15.
  */
 public class CameraHelper {
-    private final CameraHelperImpl mImpl;
 
-    public CameraHelper(final Context context) {
-        //if (SDK_INT >= GINGERBREAD) {
-            mImpl = new CameraHelperGB();
-        /*} else {
-            mImpl = new CameraHelperBase(context);
-        }*/
+    public static boolean hasCamera(Context context) {
+        // check if the device has camera
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public interface CameraHelperImpl {
-        int getNumberOfCameras();
-
-        Camera openCamera(int id);
-
-        Camera openDefaultCamera();
-
-        Camera openCameraFacing(int facing);
-
-        boolean hasCamera(int cameraFacingFront);
-
-        void getCameraInfo(int cameraId, CameraInfo2 cameraInfo);
-    }
-
-    public int getNumberOfCameras() {
-        return mImpl.getNumberOfCameras();
-    }
-
-    public Camera openCamera(final int id) {
-        return mImpl.openCamera(id);
-    }
-
-    public Camera openDefaultCamera() {
-        return mImpl.openDefaultCamera();
-    }
-
-    public Camera openFrontCamera() {
-        return mImpl.openCameraFacing(Camera.CameraInfo.CAMERA_FACING_FRONT);
-    }
-
-    public Camera openBackCamera() {
-        return mImpl.openCameraFacing(Camera.CameraInfo.CAMERA_FACING_BACK);
-    }
-
-    public boolean hasFrontCamera() {
-        return mImpl.hasCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
-    }
-
-    public boolean hasBackCamera() {
-        return mImpl.hasCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
-    }
-
-    public void getCameraInfo(final int cameraId, final CameraInfo2 cameraInfo) {
-        mImpl.getCameraInfo(cameraId, cameraInfo);
-    }
-
-    public void setCameraDisplayOrientation(final Activity activity,
-                                            final int cameraId, final Camera camera) {
-        int result = getCameraDisplayOrientation(activity, cameraId);
-        camera.setDisplayOrientation(result);
-    }
-
-    public int getCameraDisplayOrientation(final Activity activity, final int cameraId) {
-        int rotation = activity.getWindowManager().getDefaultDisplay()
-                .getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                degrees = 0;
+    public static int findFrontFacingCamera() {
+        int cameraId = -1;
+        // Search for the front facing camera
+        int numberOfCameras = Camera.getNumberOfCameras();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                cameraId = i;
                 break;
-            case Surface.ROTATION_90:
-                degrees = 90;
+            }
+        }
+        return cameraId;
+    }
+
+    public static int findBackFacingCamera() {
+        int cameraId = -1;
+        // Search for the corner facing camera
+        // get the number of cameras
+        int numberOfCameras = Camera.getNumberOfCameras();
+        // for every camera check
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                cameraId = i;
                 break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
+            }
+        }
+        return cameraId;
+    }
+
+    public static Camera.Size getBestPictureSize(List<Camera.Size> sizes, int w, int h) {
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio = (double) h / w;
+
+        if (sizes == null) return null;
+
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
+
+        int targetHeight = h;
+
+        for (Camera.Size size : sizes) {
+            double ratio = (double) size.width / size.height;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
+            if (Math.abs(size.height - targetHeight) < minDiff) {
+                optimalSize = size;
+                minDiff = Math.abs(size.height - targetHeight);
+            }
         }
 
-        int result;
-        CameraInfo2 info = new CameraInfo2();
-        getCameraInfo(cameraId, info);
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-        } else { // back-facing
-            result = (info.orientation - degrees + 360) % 360;
+        if (optimalSize == null) {
+            minDiff = Double.MAX_VALUE;
+            for (Camera.Size size : sizes) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - targetHeight);
+                }
+            }
         }
-        return result;
+        return optimalSize;
     }
 
-    public static class CameraInfo2 {
-        public int facing;
-        public int orientation;
+    private static Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio = (double) h / w;
+
+        if (sizes == null) return null;
+
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
+
+        int targetHeight = h;
+
+        for (Camera.Size size : sizes) {
+            double ratio = (double) size.width / size.height;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
+            if (Math.abs(size.height - targetHeight) < minDiff) {
+                optimalSize = size;
+                minDiff = Math.abs(size.height - targetHeight);
+            }
+        }
+
+        if (optimalSize == null) {
+            minDiff = Double.MAX_VALUE;
+            for (Camera.Size size : sizes) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - targetHeight);
+                }
+            }
+        }
+        return optimalSize;
     }
+
+    public static Camera.Size getBestAspectPreviewSize(int displayOrientation,
+                                                       int width,
+                                                       int height,
+                                                       Camera.Parameters parameters
+    ) {
+
+        double closeEnough = 0.1;
+        double targetRatio = (double) width / height;
+        Camera.Size bestSize = null;
+
+        if (displayOrientation == 90 || displayOrientation == 270) {
+            targetRatio = (double) height / width;
+        }
+
+        List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+        TreeMap<Double, List> diffs = new TreeMap<Double, List>();
+
+
+        for (Camera.Size size : sizes) {
+
+            double ratio = (double) size.width / size.height;
+
+            double diff = Math.abs(ratio - targetRatio);
+            if (diff < closeEnough) {
+                if (diffs.keySet().contains(diff)) {
+                    //add the value to the list
+                    diffs.get(diff).add(size);
+                } else {
+                    List newList = new ArrayList<Camera.Size>();
+                    newList.add(size);
+                    diffs.put(diff, newList);
+                }
+
+            }
+        }
+
+        //diffs now contains all of the usable sizes
+        //now let's see which one has the least amount of
+        for (Map.Entry entry : diffs.entrySet()) {
+            List<Camera.Size> entries = (List) entry.getValue();
+            for (Camera.Size s : entries) {
+
+                if (s.width >= width && s.height >= width) {
+                    bestSize = s;
+                }
+            }
+        }
+
+        //if we don't have bestSize then just use whatever the default was to begin with
+        if (bestSize == null) {
+            if (parameters.getPreviewSize() != null) {
+                bestSize = parameters.getPreviewSize();
+                return bestSize;
+            }
+
+            //pick the smallest difference in ratio?  or pick the largest resolution?
+            //right now we are just picking the lowest ratio difference
+            for (Map.Entry entry : diffs.entrySet()) {
+                List<Camera.Size> entries = (List) entry.getValue();
+                for (Camera.Size s : entries) {
+                    if (bestSize == null) {
+                        bestSize = s;
+                    }
+                }
+            }
+        }
+
+        return bestSize;
+    }
+
+    private static String[] flashLightModes = new String[]{
+            Camera.Parameters.FLASH_MODE_OFF,
+            Camera.Parameters.FLASH_MODE_TORCH
+    };
+
+    public static void setNextFlashLightMode(Activity activity, Camera camera) {
+        Camera.Parameters cameraParams = camera.getParameters();
+        ImageButton flashLightSwitchButton = (ImageButton) activity.findViewById(R.id.camera_preview_flash_button);
+        if (cameraParams.getFlashMode() == null) {
+            // The phone has no flash or the choosen camera can not toggle the flash
+            throw new RuntimeException("Can't turn the flash on !");
+        } else {
+            for (int i = 0; i < flashLightModes.length; i++) {
+                if (cameraParams.getFlashMode().equals(flashLightModes[i])) {
+                    int nextIndex = (i + 1) % flashLightModes.length;
+                    cameraParams.setFlashMode(flashLightModes[nextIndex]);
+                    camera.setParameters(cameraParams);
+                    switch (nextIndex) {
+                        case 0:
+                            flashLightSwitchButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_action_flash_off));
+                            return;
+                        case 1:
+                            flashLightSwitchButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_action_flash_on));
+                            return;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+
 }

@@ -3,7 +3,7 @@
     package="com.example.vpxencoder.test" >
 
     <uses-sdk
-        android:minSdkVersion="15"
+        android:minSdkVersion="18"
         android:targetSdkVersion="19" />
 
     <instrumentation

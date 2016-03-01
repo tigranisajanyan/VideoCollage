@@ -2,4 +2,29 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="editor_bottom_btn_space">65dp</dimen>
+    <dimen name="bg_item_size">120dp</dimen>
+    <dimen name="main_icon_padding">40dp</dimen>
+    <dimen name="main_screen_padding_bottom">24dp</dimen>
+    <dimen name="main_screen_padding_top">2dp</dimen>
+    <dimen name="main_screen_icon_size">44dp</dimen>
+    <dimen name="editor_bottom_btn_wrapper_size">52dp</dimen>
+    <dimen name="editor_top_btn_wrapper_size">45dp</dimen>
+    <dimen name="editor_top_btn_spacing">12dp</dimen>
+    <dimen name="editor_top_btn_middle_spacing">8dp</dimen>
+    <dimen name="main_icon_margin">2dp</dimen>
+    <dimen name="save_dialog_width">300dp</dimen>
+    <dimen name="save_dialog_height">222dp</dimen>
+    <dimen name="save_dialog_title_text_size">18sp</dimen>
+    <dimen name="cancel_text_size">14sp</dimen>
+    <dimen name="save_dialog_space">14dp</dimen>
+    <dimen name="main_screen_label_text">12sp</dimen>
+    <dimen name="preview_footer_height">45dp</dimen>
+    <dimen name="main_screen_logo_margin_top">50dp</dimen>
+
+    <dimen name="draft_button_margin">2dp</dimen>
+    <dimen name="draft_name_text_size">12sp</dimen>
+    <dimen name="draft_name_margin">6dp</dimen>
+
 </resources>

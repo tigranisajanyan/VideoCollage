@@ -13,21 +13,22 @@ import java.util.ArrayList;
 public class VideoDecoder {
 
     private static final String root = Environment.getExternalStorageDirectory().toString();
-    private File myDir = new File(root + "/" + "test_images");
 
     private String inputFilePath = "";
     private String outputDirectory = "";
 
-    private FrameSize frameSize;
+    private int frameSize;
     private Context context;
+    private int frameCount;
 
     private ArrayList<String> savedFramePath = new ArrayList<>();
     private static OnDecodeFinishedListener onDecodeFinishedListener;
 
-    public VideoDecoder(Context context, String inputFilePath, FrameSize frameSize, String outputDirectory) {
+    public VideoDecoder(Context context, String inputFilePath, int frameCount, int frameSize, String outputDirectory) {
 
         this.context = context;
         this.inputFilePath = inputFilePath;
+        this.frameCount = frameCount;
         this.frameSize = frameSize;
         this.outputDirectory = outputDirectory;
 
@@ -37,7 +38,7 @@ public class VideoDecoder {
      * extracting frames from video
      */
     public void extractVideoFrames() {
-        new ExtractFrames().execute();
+        new ExtractFrames().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void setOnDecodeFinishedListener(OnDecodeFinishedListener l) {
@@ -57,7 +58,7 @@ public class VideoDecoder {
 
             ExtractMpegFrames extractMpegFrames = new ExtractMpegFrames();
             try {
-                extractMpegFrames.extractMpegFrames(context, inputFilePath, frameSize.ordinal() + 1, outputDirectory);
+                extractMpegFrames.extractMpegFrames(context, inputFilePath, frameCount, frameSize, outputDirectory);
 
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
@@ -83,12 +84,6 @@ public class VideoDecoder {
 
         void onFinish(boolean isDone);
 
-    }
-
-    public enum FrameSize {
-        ORIGINAL,
-        NORMAL,
-        SMALL
     }
 
 }
